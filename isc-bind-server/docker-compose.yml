@@ -9,6 +9,7 @@ services:
       - "53:53/udp"
       - "953:953/tcp"
     volumes:
+      - "../bind/usr:/usr/share/dns/"
       - "../bind/etc:/etc/bind"
       - "../bind/var/cache:/var/cache/bind"
       - "../bind/var/lib:/var/lib/bind"

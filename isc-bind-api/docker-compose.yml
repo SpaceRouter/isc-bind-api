@@ -1,0 +1,9 @@
+version: '3'
+services: 
+  isc-bind-api:
+    build: .
+    container_name: isc-bind-api
+    image: isc-bind-api
+    ports: 
+      - "8090:8090"
+    restart: always

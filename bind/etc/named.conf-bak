@@ -1,0 +1,32 @@
+options {
+        directory "/var/cache/bind";
+        listen-on { any; };
+        listen-on-v6 { any; };
+        allow-recursion { any; };
+        allow-transfer { none; };
+        allow-update { none; };
+        forwarders {
+             1.1.1.1;
+             8.8.8.8;
+        };
+};
+
+key "rndc-key" {
+    algorithm hmac-sha256;
+    secret "enKtTjz4akMFu4F+KbYJFjCXgXALMsR9uRd7bjC5qc0=";
+};
+
+controls {
+    inet 127.0.0.1 port 953
+        allow { 127.0.0.1; } keys { "rndc-key"; };
+};
+
+zone "safe.lan" IN {
+    type master;
+    file "/etc/bind/db.safe.lan";
+};
+zone "1.168.192.in-addr.arpa" {
+    type master;
+    notify no;
+    file "/etc/bind/db.rev.1.168.192.in-addr.arpa";
+};
