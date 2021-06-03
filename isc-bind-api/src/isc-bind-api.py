@@ -38,7 +38,8 @@ def enable_cors(fn):
 @route('/dns/zone/<zone_name>', method=['GET'])
 @enable_cors
 def get_zone(zone_name):
-    records = {}
+    item = dict()
+    records = []
 
     if not zone_name.endswith('.'):
         zone_name = zone_name + '.'
@@ -53,11 +54,8 @@ def get_zone(zone_name):
 
     for (name, ttl, rdata) in zone.iterate_rdatas():
         if rdata.rdtype != SOA:
-            if records.get(str(name), False):
-                records[str(name)] = records[str(name)] + [{'Answer': str(rdata), 'RecordType': rdata.rdtype, 'TTL': ttl}]
-            else:
-                records[str(name)] = [{'Answer': str(rdata), 'RecordType': rdata.rdtype, 'TTL': ttl}]
-
+            item = dict(Hostname= str(name), Answer= str(rdata), RecordType= rdata.rdtype, TTL= ttl)
+            records.append(item)
     return json.dumps({zone_name: records})
 
 @route('/dns/record/<domain>/<ttl>/<record_type>/<response>', method=['PUT', 'POST', 'DELETE', 'OPTIONS'])

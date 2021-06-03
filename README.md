@@ -41,27 +41,30 @@ Return example:
 
 ```
 {
-	"safe.lan.": {
-		"test": [{
-			"Answer": "192.168.1.50",
-			"RecordType": 1,
-			"TTL": 604800
-		}],
-		"@": [{
-			"Answer": "ns",
-			"RecordType": 2,
-			"TTL": 604800
-		}],
-		"ns": [{
-			"Answer": "192.168.1.1",
-			"RecordType": 1,
-			"TTL": 604800
-		}],
-		"test1": [{
-			"Answer": "192.168.1.51",
-			"RecordType": 1,
-			"TTL": 604800
-		}]
-	}
+	"safe.lan.": [
+    {
+		"Answer": "ns",
+		"Hostname": "@",
+		"RecordType": 2,
+		"TTL": 604800
+	}, 
+    {
+		"Answer": "192.168.1.1",
+		"Hostname": "ns",
+		"RecordType": 1,
+		"TTL": 604800
+	}, 
+    {
+		"Answer": "192.168.1.50",
+		"Hostname": "test",
+		"RecordType": 1,
+		"TTL": 604800
+	}, 
+    {
+		"Answer": "192.168.1.51",
+		"Hostname": "test1",
+		"RecordType": 1,
+		"TTL": 604800
+	}]
 }
 ```
