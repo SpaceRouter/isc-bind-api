@@ -1,6 +1,6 @@
 version: '3'
 services:
-  dhcp:
+  bind:
     build: .
     container_name: isc-bind-server
     image: isc-bind-server

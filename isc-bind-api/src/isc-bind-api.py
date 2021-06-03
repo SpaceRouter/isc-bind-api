@@ -11,9 +11,13 @@ import dns.query
 import dns.zone
 
 os.environ['ZONES'] = 'safe.lan'
-DNS_SERVER    = '192.168.1.1'
-TSIG_USERNAME = 'test'
-TSIG_PASSWORD = 'test'
+os.environ['SERVER'] = '192.168.1.1'
+os.environ['TSIG_USERNAME'] = 'TSIG'
+os.environ['TSIG_PASSWORD'] = 'ze4byKPhDoxIfD2rAiWFsg=='
+
+DNS_SERVER    = os.environ['SERVER']
+TSIG_USERNAME = os.environ['TSIG_USERNAME']
+TSIG_PASSWORD = os.environ['TSIG_PASSWORD']
 VALID_ZONES   = [i + '.' for i in os.environ['ZONES'].split(',')]
 RECORD_TYPES  = ['A', 'AAAA', 'CNAME', 'MX', 'NS', 'TXT', 'SOA']
 
@@ -56,26 +60,8 @@ def get_zone(zone_name):
 
     return json.dumps({zone_name: records})
 
-@route('/dns/record/<domain>', method=['GET'])
-def get_record(domain):
-    record = {}
-
-    valid = len(filter(domain.endswith, VALID_ZONES)) > 0
-
-    if not valid:
-        return json.dumps({'error': 'zone not permitted'})
-
-    for record_type in RECORD_TYPES:
-        try:
-            answers = dns.resolver.query(domain, record_type)
-        except dns.resolver.NoAnswer:
-            continue
-
-        record.update({record_type: map(str, answers.rrset)})
-
-    return json.dumps({domain: record})
-
 @route('/dns/record/<domain>/<ttl>/<record_type>/<response>', method=['PUT', 'POST', 'DELETE', 'OPTIONS'])
+@enable_cors
 def dns_mgmt(domain, ttl, record_type, response):
         zone = '.'.join(dns.name.from_text(domain).labels[1:])
 
@@ -89,7 +75,7 @@ def dns_mgmt(domain, ttl, record_type, response):
             resolver = dns.resolver.Resolver()
             resolver.nameservers = [DNS_SERVER]
             try:
-                answer = dns.resolver.query(domain, record_type)
+                answer = resolver.query(domain, record_type)
             except dns.resolver.NXDOMAIN:
                 return json.dumps({'error': 'domain does not exist'})
 
