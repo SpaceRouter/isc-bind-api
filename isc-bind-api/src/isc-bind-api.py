@@ -31,7 +31,7 @@ def enable_cors(fn):
 
   return _enable_cors
 
-@route('/dns/zone/<zone_name>', methods=['GET'])
+@route('/dns/zone/<zone_name>', method=['GET'])
 @enable_cors
 def get_zone(zone_name):
     records = {}
@@ -56,8 +56,7 @@ def get_zone(zone_name):
 
     return json.dumps({zone_name: records})
 
-@route('/dns/record/<domain>', methods=['GET'])
-@enable_cors
+@route('/dns/record/<domain>', method=['GET'])
 def get_record(domain):
     record = {}
 
@@ -76,44 +75,41 @@ def get_record(domain):
 
     return json.dumps({domain: record})
 
-@route('/dns/record/<domain>/<ttl>/<record_type>/<response>', methods=['PUT', 'POST', 'DELETE', 'OPTIONS'])
-@enable_cors
+@route('/dns/record/<domain>/<ttl>/<record_type>/<response>', method=['PUT', 'POST', 'DELETE', 'OPTIONS'])
 def dns_mgmt(domain, ttl, record_type, response):
-    zone = '.'.join(dns.name.from_text(domain).labels[1:])
+        zone = '.'.join(dns.name.from_text(domain).labels[1:])
 
-    if record_type not in RECORD_TYPES:
-        return json.dumps({'error': 'not a valid record type'})
+        if record_type not in RECORD_TYPES:
+            return json.dumps({'error': 'not a valid record type'})
 
-    if zone not in VALID_ZONES:
-        return json.dumps({'error': 'not a valid zone'})
+        if zone not in VALID_ZONES:
+            return json.dumps({'error': 'not a valid zone'})
 
-    if request.method == 'PUT' or request.method == 'DELETE':
-        resolver = dns.resolver.Resolver()
-        resolver.nameservers = [DNS_SERVER]
-        
+        if request.method == 'PUT' or request.method == 'DELETE':
+            resolver = dns.resolver.Resolver()
+            resolver.nameservers = [DNS_SERVER]
+            try:
+                answer = dns.resolver.query(domain, record_type)
+            except dns.resolver.NXDOMAIN:
+                return json.dumps({'error': 'domain does not exist'})
+
+        tsig = dns.tsigkeyring.from_text({TSIG_USERNAME: TSIG_PASSWORD})
+        action = dns.update.Update(zone, keyring=tsig)
+
+        if request.method == 'DELETE':
+            action.delete(dns.name.from_text(domain).labels[0])
+        elif request.method == 'PUT':
+            action.replace(dns.name.from_text(domain).labels[0], ttl, str(record_type), str(response))
+        elif request.method == 'POST':
+            action.add(dns.name.from_text(domain).labels[0], ttl, str(record_type), str(response))
         try:
-            answer = dns.resolver.query(domain, record_type)
-        except dns.resolver.NXDOMAIN:
-            return json.dumps({'error': 'domain does not exist'})
+            response = dns.query.tcp(action, DNS_SERVER)
+        except:
+            return json.dumps({'error': 'DNS transaction failed'})
 
-    tsig = dns.tsigkeyring.from_text({TSIG_USERNAME: TSIG_PASSWORD})
-    action = dns.update.Update(zone, keyring=tsig)
-
-    if request.method == 'DELETE':
-        action.delete(dns.name.from_text(domain).labels[0])
-    elif request.method == 'PUT':
-        action.replace(dns.name.from_text(domain).labels[0], ttl, str(record_type), str(response))
-
-    elif request.method == 'POST':
-        action.add(dns.name.from_text(domain).labels[0], ttl, str(record_type), str(response))
-    try:
-        response = dns.query.tcp(action, DNS_SERVER)
-    except:
-        return json.dumps({'error': 'DNS transaction failed'})
-
-    if response.rcode() == 0:
-        return json.dumps({domain: 'DNS request successful'})
-    else:
-        return json.dumps({domain: 'DNS request failed'})
+        if response.rcode() == 0:
+            return json.dumps({domain: 'DNS request successful'})
+        else:
+            return json.dumps({domain: 'DNS request failed'})
 
 run(host='0.0.0.0', port=8090, debug=False)
