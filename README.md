@@ -13,29 +13,65 @@ RECORD_TYPES  = ['A', 'AAAA', 'CNAME', 'MX', 'NS', 'TXT', 'SOA']
 API List :
 ---------
 
+/test.safe.lan/604800/A/192.168.1.61
+
 **ADD DNS record:**
 
 Create a DNS record
 
-    curl -i -H "Content-Type: application/json" -X POST http://localhost:8090/dns/record/test.safe.lan/604800/A/192.168.1.60
+	const response = await fetch("http://localhost:8090/add", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        Answer: 192.168.1.51,
+        Hostname: "test1" + ".safe.lan",
+        RecordType: A,
+        TTL: 300,
+      }),
+    });
 
-**DELETE DNS record:**
-
-Delete a DNS record
-
-    curl -i -H "Content-Type: application/json" -X DELETE http://localhost:8090/dns/record/test.safe.lan/604800/A/192.168.1.60
+    curl -d "Hostname=test1&TTL=300&RecordType=A&Answer=192.168.1.51" -X POST http://localhost:8090/add
 
 **UPDATE DNS record:**
 
 Update a DNS record
 
-    curl -i -H "Content-Type: application/json" -X PUT http://localhost:8090/dns/record/test.safe.lan/604800/A/192.168.1.61
+    const response = await fetch("http://localhost:8090/update", {
+      method: "PUT",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        Answer: 192.168.1.60,
+        Hostname: "test1" + ".safe.lan",
+        RecordType: A,
+        TTL: 300,
+      }),
+    });
+
+    curl -d "Hostname=test1&TTL=300&RecordType=A&Answer=192.168.1.60" -X PUT http://localhost:8090/update
+
+**DELETE DNS record:**
+
+Delete a DNS record
+
+    const response = await fetch("http://localhost:8090/delete", {
+      method: "DELETE",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        Answer: 192.168.1.60,
+        Hostname: "test1" + ".safe.lan",
+        RecordType: A,
+      }),
+    });
+
+    curl -d "Hostname=test1&RecordType=A&Answer=192.168.1.60" -X DELETE http://localhost:8090/delete
 
 **SHOW Entire Zone:**
 
 Retrieve data regarding the specified zone.
 
-    curl http://localhost:8090/dns/zone/safe.lan
+    const response = await fetch("http://localhost:8090/delete");
+
+    curl http://localhost:8090/zone
 
 Return example:
 
@@ -54,13 +90,13 @@ Return example:
 		"RecordType": 1,
 		"TTL": 604800
 	}, 
-		{
+	{
 		"Answer": "192.168.1.50",
 		"Hostname": "test",
 		"RecordType": 1,
 		"TTL": 604800
 	}, 
-		{
+	{
 		"Answer": "192.168.1.51",
 		"Hostname": "test1",
 		"RecordType": 1,

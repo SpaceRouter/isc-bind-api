@@ -10,15 +10,16 @@ import dns.update
 import dns.query
 import dns.zone
 
-os.environ['ZONES'] = 'safe.lan'
+os.environ['ZONE'] = 'safe.lan'
 os.environ['SERVER'] = '192.168.1.1'
 os.environ['TSIG_USERNAME'] = 'TSIG'
 os.environ['TSIG_PASSWORD'] = 'ze4byKPhDoxIfD2rAiWFsg=='
 
+ZONE          = os.environ['ZONE']
 DNS_SERVER    = os.environ['SERVER']
 TSIG_USERNAME = os.environ['TSIG_USERNAME']
 TSIG_PASSWORD = os.environ['TSIG_PASSWORD']
-VALID_ZONES   = [i + '.' for i in os.environ['ZONES'].split(',')]
+VALID_ZONES   = [i + '.' for i in os.environ['ZONE'].split(',')]
 RECORD_TYPES  = ['A', 'AAAA', 'CNAME', 'MX', 'NS', 'TXT', 'SOA']
 
 def enable_cors(fn):
@@ -35,9 +36,10 @@ def enable_cors(fn):
 
   return _enable_cors
 
-@route('/dns/zone/<zone_name>', method=['GET'])
+@route('/zone', method=['GET'])
 @enable_cors
-def get_zone(zone_name):
+def get_zone():
+    zone_name = ZONE
     item = dict()
     records = []
 
@@ -58,42 +60,108 @@ def get_zone(zone_name):
             records.append(item)
     return json.dumps({zone_name: records})
 
-@route('/dns/record/<domain>/<ttl>/<record_type>/<response>', method=['PUT', 'POST', 'DELETE', 'OPTIONS'])
+@route('/add', method=['POST', 'OPTIONS'])
 @enable_cors
-def dns_mgmt(domain, ttl, record_type, response):
-        zone = '.'.join(dns.name.from_text(domain).labels[1:])
+def add():
+    data = request.json
+    domain = data['Hostname']
+    ttl = data['TTL']
+    record_type = data['RecordType']
+    response = data['Answer']
 
-        if record_type not in RECORD_TYPES:
-            return json.dumps({'error': 'not a valid record type'})
+    zone = '.'.join(dns.name.from_text(domain).labels[1:])
 
-        if zone not in VALID_ZONES:
-            return json.dumps({'error': 'not a valid zone'})
+    if record_type not in RECORD_TYPES:
+        return json.dumps({'error': 'not a valid record type'})
 
-        if request.method == 'PUT' or request.method == 'DELETE':
-            resolver = dns.resolver.Resolver()
-            resolver.nameservers = [DNS_SERVER]
-            try:
-                answer = resolver.query(domain, record_type)
-            except dns.resolver.NXDOMAIN:
-                return json.dumps({'error': 'domain does not exist'})
+    if zone not in VALID_ZONES:
+        return json.dumps({'error': 'not a valid zone'})
 
-        tsig = dns.tsigkeyring.from_text({TSIG_USERNAME: TSIG_PASSWORD})
-        action = dns.update.Update(zone, keyring=tsig)
+    tsig = dns.tsigkeyring.from_text({TSIG_USERNAME: TSIG_PASSWORD})
+    action = dns.update.Update(zone, keyring=tsig)
+    action.add(dns.name.from_text(domain).labels[0], ttl, str(record_type), str(response))
+    try:
+        response = dns.query.tcp(action, DNS_SERVER)
+    except:
+        return json.dumps({'error': 'DNS transaction failed'})
 
-        if request.method == 'DELETE':
-            action.delete(dns.name.from_text(domain).labels[0])
-        elif request.method == 'PUT':
-            action.replace(dns.name.from_text(domain).labels[0], ttl, str(record_type), str(response))
-        elif request.method == 'POST':
-            action.add(dns.name.from_text(domain).labels[0], ttl, str(record_type), str(response))
-        try:
-            response = dns.query.tcp(action, DNS_SERVER)
-        except:
-            return json.dumps({'error': 'DNS transaction failed'})
+    if response.rcode() == 0:
+        return json.dumps({domain: 'DNS request successful'})
+    else:
+        return json.dumps({domain: 'DNS request failed'})
 
-        if response.rcode() == 0:
-            return json.dumps({domain: 'DNS request successful'})
-        else:
-            return json.dumps({domain: 'DNS request failed'})
+@route('/update', method=['PUT', 'OPTIONS'])
+@enable_cors
+def update():
+    data = request.json
+    domain = data['Hostname']
+    ttl = data['TTL']
+    record_type = data['RecordType']
+    response = data['Answer']
+
+    zone = '.'.join(dns.name.from_text(domain).labels[1:])
+
+    if record_type not in RECORD_TYPES:
+        return json.dumps({'error': 'not a valid record type'})
+
+    if zone not in VALID_ZONES:
+        return json.dumps({'error': 'not a valid zone'})
+
+    resolver = dns.resolver.Resolver()
+    resolver.nameservers = [DNS_SERVER]
+    try:
+        answer = resolver.query(domain, record_type)
+    except dns.resolver.NXDOMAIN:
+        return json.dumps({'error': 'domain does not exist'})
+
+    tsig = dns.tsigkeyring.from_text({TSIG_USERNAME: TSIG_PASSWORD})
+    action = dns.update.Update(zone, keyring=tsig)
+    action.replace(dns.name.from_text(domain).labels[0], ttl, str(record_type), str(response))
+    try:
+        response = dns.query.tcp(action, DNS_SERVER)
+    except:
+        return json.dumps({'error': 'DNS transaction failed'})
+
+    if response.rcode() == 0:
+        return json.dumps({domain: 'DNS request successful'})
+    else:
+        return json.dumps({domain: 'DNS request failed'})
+
+@route('/delete', method=['DELETE', 'OPTIONS'])
+@enable_cors
+def delete():
+    data = request.json
+    domain = data['Hostname']
+    record_type = data['RecordType']
+    response = data['Answer']
+
+    zone = '.'.join(dns.name.from_text(domain).labels[1:])
+
+    if record_type not in RECORD_TYPES:
+        return json.dumps({'error': 'not a valid record type'})
+
+    if zone not in VALID_ZONES:
+        return json.dumps({'error': 'not a valid zone'})
+
+    resolver = dns.resolver.Resolver()
+    resolver.nameservers = [DNS_SERVER]
+    try:
+        answer = resolver.query(domain, record_type)
+    except dns.resolver.NXDOMAIN:
+        return json.dumps({'error': 'domain does not exist'})
+
+    tsig = dns.tsigkeyring.from_text({TSIG_USERNAME: TSIG_PASSWORD})
+    action = dns.update.Update(zone, keyring=tsig)
+    action.delete(dns.name.from_text(domain).labels[0])
+    try:
+        response = dns.query.tcp(action, DNS_SERVER)
+    except:
+        return json.dumps({'error': 'DNS transaction failed'})
+
+    if response.rcode() == 0:
+        return json.dumps({domain: 'DNS request successful'})
+    else:
+        return json.dumps({domain: 'DNS request failed'})
+
 
 run(host='0.0.0.0', port=8090, debug=False)
