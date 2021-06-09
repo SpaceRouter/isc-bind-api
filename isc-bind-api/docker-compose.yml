@@ -4,6 +4,11 @@ services:
     build: .
     container_name: isc-bind-api
     image: isc-bind-api
+    environment: 
+      ZONE: 'opengate.lan'
+      SERVER: '192.168.1.1'
+      TSIG_KEY: 'TSIG'
+      TSIG_SECRET: 'ze4byKPhDoxIfD2rAiWFsg=='
     ports: 
       - "8090:8090"
     restart: always

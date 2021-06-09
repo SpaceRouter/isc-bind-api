@@ -10,11 +10,6 @@ import dns.update
 import dns.query
 import dns.zone
 
-os.environ['ZONE'] = 'opengate.lan'
-os.environ['SERVER'] = '192.168.1.1'
-os.environ['TSIG_KEY'] = 'TSIG'
-os.environ['TSIG_SECRET'] = 'ze4byKPhDoxIfD2rAiWFsg=='
-
 ZONE            = os.environ['ZONE']
 DNS_SERVER      = os.environ['SERVER']
 TSIG_USERNAME   = os.environ['TSIG_KEY']
