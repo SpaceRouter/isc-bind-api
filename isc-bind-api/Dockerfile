@@ -1,4 +1,4 @@
-FROM python
+FROM python:2.7-slim
 
 LABEL "space.opengate"="SAFEROUTER"
 LABEL space.opengate.image.authors="theo.lefevre@edu.esiee.fr"

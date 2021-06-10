@@ -4,10 +4,7 @@ services:
     build: .
     container_name: isc-bind-server
     image: isc-bind-server
-    ports:
-      - "53:53/tcp"
-      - "53:53/udp"
-      - "953:953/tcp"
+    network_mode: "host"
     volumes:
       - "../bind/usr:/usr/share/dns/"
       - "../bind/etc:/etc/bind"

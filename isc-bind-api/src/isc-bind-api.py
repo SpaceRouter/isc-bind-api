@@ -64,7 +64,7 @@ def add():
     domain = data['Hostname']
     ttl = data['TTL']
     record_type = data['RecordType']
-    response = data['Answer']
+    answer = data['Answer']
 
     zone = '.'.join(dns.name.from_text(domain).labels[1:])
 
@@ -78,15 +78,15 @@ def add():
 
     tsig = dns.tsigkeyring.from_text({TSIG_USERNAME: TSIG_PASSWORD})
     action = dns.update.Update(zone, keyring=tsig)
-    action.add(dns.name.from_text(domain).labels[0], ttl, str(record_type), str(response))
+    action.add(dns.name.from_text(domain).labels[0], ttl, str(record_type), str(answer))
 
     try:
-        response = dns.query.tcp(action, DNS_SERVER)
+        query = dns.query.tcp(action, DNS_SERVER)
     except:
         response.status = 500
         return json.dumps({'error': 'DNS transaction failed'})
 
-    if response.rcode() == 0:
+    if query.rcode() == 0:
         response.status = 200
         return json.dumps({domain: 'DNS request successful'})
     else:
@@ -100,7 +100,7 @@ def update():
     domain = data['Hostname']
     ttl = data['TTL']
     record_type = data['RecordType']
-    response = data['Answer']
+    answer = data['Answer']
 
     zone = '.'.join(dns.name.from_text(domain).labels[1:])
 
@@ -116,21 +116,21 @@ def update():
     resolver.nameservers = [DNS_SERVER]
 
     try:
-        answer = resolver.query(domain, record_type)
+        query = resolver.query(domain, record_type)
     except dns.resolver.NXDOMAIN:
         response.status = 500
         return json.dumps({'error': 'domain does not exist'})
 
     tsig = dns.tsigkeyring.from_text({TSIG_USERNAME: TSIG_PASSWORD})
     action = dns.update.Update(zone, keyring=tsig)
-    action.replace(dns.name.from_text(domain).labels[0], ttl, str(record_type), str(response))
+    action.replace(dns.name.from_text(domain).labels[0], ttl, str(record_type), str(answer))
     try:
-        response = dns.query.tcp(action, DNS_SERVER)
+        query = dns.query.tcp(action, DNS_SERVER)
     except:
         response.status = 500
         return json.dumps({'error': 'DNS transaction failed'})
 
-    if response.rcode() == 0:
+    if query.rcode() == 0:
         response.status = 200
         return json.dumps({domain: 'DNS request successful'})
     else:
@@ -143,7 +143,6 @@ def delete():
     data = request.json
     domain = data['Hostname']
     record_type = data['RecordType']
-    response = data['Answer']
 
     zone = '.'.join(dns.name.from_text(domain).labels[1:])
 
@@ -159,7 +158,7 @@ def delete():
     resolver.nameservers = [DNS_SERVER]
 
     try:
-        answer = resolver.query(domain, record_type)
+        query = resolver.query(domain, record_type)
     except dns.resolver.NXDOMAIN:
         response.status = 500
         return json.dumps({'error': 'domain does not exist'})
@@ -169,12 +168,12 @@ def delete():
     action.delete(dns.name.from_text(domain).labels[0])
 
     try:
-        response = dns.query.tcp(action, DNS_SERVER)
+        query = dns.query.tcp(action, DNS_SERVER)
     except:
         response.status = 500
         return json.dumps({'error': 'DNS transaction failed'})
 
-    if response.rcode() == 0:
+    if query.rcode() == 0:
         response.status = 200
         return json.dumps({domain: 'DNS request successful'})
     else:

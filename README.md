@@ -13,8 +13,6 @@ RECORD_TYPES  = ['A', 'AAAA', 'CNAME', 'MX', 'NS', 'TXT', 'SOA']
 API List :
 ---------
 
-/test.safe.lan/604800/A/192.168.1.61
-
 **ADD DNS record:**
 
 Create a DNS record
@@ -23,14 +21,14 @@ Create a DNS record
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
-        Answer: 192.168.1.51,
-        Hostname: "test1" + ".safe.lan",
+        Answer: 192.168.1.70,
+        Hostname: "devtest" + ".opengate.lan",
         RecordType: A,
         TTL: 300,
       }),
     });
 
-    curl -d "Hostname=test1&TTL=300&RecordType=A&Answer=192.168.1.51" -X POST http://localhost:8090/add
+    curl -H "Content-Type: application/json" -d '{"Hostname":"devtest.opengate.lan","TTL":"300","RecordType":"A","Answer":"192.168.1.70"}' -X POST http://localhost:8090/add
 
 **UPDATE DNS record:**
 
@@ -40,14 +38,14 @@ Update a DNS record
       method: "PUT",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
-        Answer: 192.168.1.60,
-        Hostname: "test1" + ".safe.lan",
+        Answer: 192.168.1.71,
+        Hostname: "devtest" + ".opengate.lan",
         RecordType: A,
         TTL: 300,
       }),
     });
 
-    curl -d "Hostname=test1&TTL=300&RecordType=A&Answer=192.168.1.60" -X PUT http://localhost:8090/update
+    curl -H "Content-Type: application/json" -d '{"Hostname":"devtest.opengate.lan","TTL":"300","RecordType":"A","Answer":"192.168.1.71"}' -X PUT http://localhost:8090/update
 
 **DELETE DNS record:**
 
@@ -57,19 +55,18 @@ Delete a DNS record
       method: "DELETE",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
-        Answer: 192.168.1.60,
-        Hostname: "test1" + ".safe.lan",
+        Hostname: "devtest" + ".opengate.lan",
         RecordType: A,
       }),
     });
 
-    curl -d "Hostname=test1&RecordType=A&Answer=192.168.1.60" -X DELETE http://localhost:8090/delete
+    curl -H "Content-Type: application/json" -d '{"Hostname":"devtest.opengate.lan","RecordType":"A"}' -X DELETE http://localhost:8090/delete
 
 **SHOW Entire Zone:**
 
 Retrieve data regarding the specified zone.
 
-    const response = await fetch("http://localhost:8090/delete");
+    const response = await fetch("http://localhost:8090/zone");
 
     curl http://localhost:8090/zone
 
