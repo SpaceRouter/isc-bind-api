@@ -1,0 +1,14 @@
+$ORIGIN .
+$TTL 604800	; 1 week
+opengate.lan		IN SOA	ns.opengate.lan. root.opengate.lan. (
+				43         ; serial
+				604800     ; refresh (1 week)
+				86400      ; retry (1 day)
+				2419200    ; expire (4 weeks)
+				604800     ; minimum (1 week)
+				)
+			NS	ns.opengate.lan.
+$ORIGIN opengate.lan.
+ns			A	192.168.1.1
+$TTL 300	; 5 minutes
+api			A	192.168.1.1

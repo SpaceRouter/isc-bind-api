@@ -1,0 +1,26 @@
+//
+// Do any local configuration here
+//
+
+key "TSIG" {
+	algorithm hmac-md5;
+	secret "ze4byKPhDoxIfD2rAiWFsg==";
+};
+
+zone "opengate.lan" IN {
+    type master;
+    file "/etc/bind/db.opengate.lan";
+    allow-update { key "TSIG"; };
+};
+
+zone "1.168.192.in-addr.arpa" {
+    type master;
+    notify no;
+    file "/etc/bind/db.rev.1.168.192.in-addr.arpa";
+    allow-update { key "TSIG"; };
+};
+
+// Consider adding the 1918 zones here, if they are not used in your
+// organization
+//include "/etc/bind/zones.rfc1918";
+
