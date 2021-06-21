@@ -1,6 +1,7 @@
 FROM python:2.7-slim
 
-LABEL "space.opengate"="SAFEROUTER"
+LABEL "space.opengate.vendor"="SpaceRouter"
+LABEL org.opencontainers.image.source https://github.com/SpaceRouter/isc-bind-api
 LABEL space.opengate.image.authors="theo.lefevre@edu.esiee.fr"
 
 RUN mkdir /usr/src/app/

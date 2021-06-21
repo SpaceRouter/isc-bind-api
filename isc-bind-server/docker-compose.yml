@@ -1,14 +1,13 @@
-version: '3'
+version: "3"
 services:
   bind:
-    build: .
+    image: ghcr.io/spacerouter/isc-bind-server:latest
     container_name: isc-bind-server
-    image: isc-bind-server
     network_mode: "host"
     volumes:
-      - "../bind/usr:/usr/share/dns/"
-      - "../bind/etc:/etc/bind"
-      - "../bind/var/cache:/var/cache/bind"
-      - "../bind/var/lib:/var/lib/bind"
-      - "../bind/var/log:/var/log"
+      - "/etc/sr/bind/data/usr:/usr/share/dns/"
+      - "/etc/sr/bind/data/etc:/etc/bind"
+      - "/etc/sr/bind/data/var/cache:/var/cache/bind"
+      - "/etc/sr/bind/data/var/lib:/var/lib/bind"
+      - "/etc/sr/bind/data/var/log:/var/log"
     restart: always

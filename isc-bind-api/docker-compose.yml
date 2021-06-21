@@ -1,14 +1,22 @@
-version: '3'
-services: 
+version: "3"
+services:
   isc-bind-api:
-    build: .
+    image: ghcr.io/spacerouter/isc-bind-api:latest
     container_name: isc-bind-api
-    image: isc-bind-api
-    environment: 
+    environment:
       ZONE: 'opengate.lan'
       SERVER: '192.168.1.1'
       TSIG_KEY: 'TSIG'
       TSIG_SECRET: 'ze4byKPhDoxIfD2rAiWFsg=='
-    ports: 
-      - "8090:8090"
+    networks:
+     - traefik-public
+    labels:
+      traefik.http.services.dns.loadbalancer.server.port: '8090'
+      traefik.http.routers.dns.rule: (Host(`api.opengate.lan`) && PathPrefix(`/dns`))
+      traefik.http.routers.dns.entrypoints: web
+      traefik.enable: 'true'
+      traefik.http.routers.dns.service: dns
     restart: always
+networks:
+  traefik-public:
+    external: true

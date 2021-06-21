@@ -30,7 +30,7 @@ def enable_cors(fn):
 
   return _enable_cors
 
-@route('/zone')
+@route('/dns/zone')
 @enable_cors
 def get_zone():
     zone_name = ZONE
@@ -57,7 +57,7 @@ def get_zone():
     response.status = 200
     return json.dumps({zone_name: records})
 
-@route('/add', method=['POST', 'OPTIONS'])
+@route('/dns/add', method=['POST', 'OPTIONS'])
 @enable_cors
 def add():
     data = request.json
@@ -93,7 +93,7 @@ def add():
         response.status = 500
         return json.dumps({domain: 'DNS request failed'})
 
-@route('/update', method=['PUT', 'OPTIONS'])
+@route('/dns/update', method=['PUT', 'OPTIONS'])
 @enable_cors
 def update():
     data = request.json
@@ -137,7 +137,7 @@ def update():
         response.status = 500
         return json.dumps({domain: 'DNS request failed'})
 
-@route('/delete', method=['DELETE', 'OPTIONS'])
+@route('/dns/delete', method=['DELETE', 'OPTIONS'])
 @enable_cors
 def delete():
     data = request.json
